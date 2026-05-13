@@ -8,7 +8,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
@@ -31,10 +30,14 @@ public class Mss3State extends PersistentState {
         ServerWorld overworld = server.getWorld(World.OVERWORLD);
         if (overworld == null) throw new IllegalStateException("Overworld not available");
         PersistentStateManager mgr = overworld.getPersistentStateManager();
-        PersistentStateType<Mss3State> type = new PersistentStateType<>(
-            DATA_KEY, Mss3State::new, Mss3State::fromNbt, null
+        
+        // แก้ไขจุดที่ 1: เปลี่ยนมาใช้ PersistentState.Type ให้ตรงกับเวอร์ชัน 1.21.4
+        PersistentState.Type<Mss3State> type = new PersistentState.Type<>(
+            Mss3State::new, 
+            Mss3State::fromNbt, 
+            null
         );
-        return mgr.getOrCreate(type);
+        return mgr.getOrCreate(type, DATA_KEY);
     }
 
     public PlayerData getOrCreatePlayer(UUID uuid) {
@@ -42,10 +45,13 @@ public class Mss3State extends PersistentState {
     }
 
     /** Return ALL active listings from all players, flattened. */
-    public List<ShopListing> getAllListings() {
+    // แก้ไขจุดที่ 2: ระบุชื่อคลาส ShopListing ให้ถูกต้อง
+    public List<PlayerData.ShopListing> getAllListings() {
         List<PlayerData.ShopListing> all = new ArrayList<>();
         for (PlayerData d : players.values()) {
-            all.addAll(d.listings);
+            if (d.listings != null) {
+                all.addAll(d.listings);
+            }
         }
         return all;
     }
