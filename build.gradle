@@ -1,6 +1,6 @@
 plugins {
     id 'fabric-loom' version '1.7-SNAPSHOT'
-    // ลบปลั๊กอิน shadow ออกไปเลยครับ เพราะเราจะไม่รวม Library ไว้ในตัวมอดแล้ว
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
 }
 
 group = 'com.mss3'
@@ -15,28 +15,34 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:1.21.1" 
     mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.18.4" // ปรับตามเวอร์ชันที่เราใช้ใน Launcher
+    modImplementation "net.fabricmc:fabric-loader:0.18.4"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
 
-    // ✅ เพิ่มตัวนี้เพื่อให้ Mod เรียกใช้ Kotlin จากข้างนอก
+    // ✅ บรรทัดนี้สำคัญ: ทำให้มอดดึง Kotlin จากข้างนอก ไม่รวมไว้ในตัว
     modImplementation "net.fabricmc:fabric-language-kotlin:1.13.11+kotlin.2.3.21"
 }
 
-// ✅ ใช้ Java 22 ตามที่ลงไว้ในเครื่อง
-java { toolchain { languageVersion = JavaLanguageVersion.of(22) } }
-
-// ❌ ลบส่วน shadowJar และการตั้งค่า remapJar ที่เกี่ยวกับ shadow ออกให้หมด
-// ใช้ค่ามาตรฐานของ Fabric Loom แทน
+// ✅ แก้ไขตรงนี้: เปลี่ยนจาก Java 22 เป็น 21 เพื่อให้ Build ผ่านง่ายขึ้น
+// (มอดที่ Build ด้วย Java 21 สามารถรันบน Minecraft Java 22 ได้ไม่มีปัญหา)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 22
+    it.options.release = 21
 }
 
 processResources {
     inputs.property "version", project.version
     filteringCharset = "UTF-8"
-
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
+}
+
+// ✅ ใช้ remapJar มาตรฐานของ Fabric ไม่ต้องมี shadowJar แล้ว
+remapJar {
+    archiveFileName = "Mss3-Mod-v1.jar"
 }
