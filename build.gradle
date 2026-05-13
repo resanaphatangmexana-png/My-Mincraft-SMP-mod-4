@@ -1,6 +1,5 @@
 plugins {
     id 'fabric-loom' version '1.9-SNAPSHOT'
-    id 'maven-publish'
 }
 
 version = "1.0.0"
@@ -11,12 +10,9 @@ repositories {
 }
 
 dependencies {
-    // กำหนดเวอร์ชัน Minecraft และ Mapping
     minecraft "com.mojang:minecraft:1.21.4"
     mappings "net.fabricmc:yarn:1.21.4+build.2:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.9"
-
-    // Fabric API (จำเป็นสำหรับ Mod ส่วนใหญ่)
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.112.0+1.21.4"
 }
 
@@ -25,13 +21,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-    withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-    from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}" }
-    }
 }
