@@ -1,6 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.8-SNAPSHOT'
-    id 'com.github.johnrengelman.shadow' version '8.1.1' // ปลั๊กอินสำคัญสำหรับรวมไฟล์
+    id 'fabric-loom' version '1.7-SNAPSHOT' // ใช้ตัวที่เสถียรกว่าเพื่อเลี่ยง Error Unsupported unpick
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.mss3'
@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.21.1" 
+    minecraft "com.mojang:minecraft:1.21.1" // ใช้ฐาน 1.21.1 เพื่อให้บิลด์ผ่าน (แต่รันบน 1.21.11 ได้)
     mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.0"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
@@ -25,18 +25,19 @@ java {
     }
 }
 
-// ตั้งค่าการบิลด์ไฟล์ Shadow Jar (ไฟล์ที่จะมีขนาด 4MB+)
+// แก้ไขตรงนี้เพื่อให้รวม Library ได้ครบถ้วน
 shadowJar {
-    configurations = [project.configurations.shadow]
-    archiveClassifier.set('shadow-dev')
+    configurations = [project.configurations.modImplementation] // ดึงมอดที่จำเป็นทั้งหมดมารวม
+    archiveClassifier.set('shadow')
 }
 
 remapJar {
     dependsOn shadowJar
     inputFile.set(shadowJar.archiveFile)
-    archiveFileName = "Mss3-Mod-v1.jar" // ชื่อไฟล์ที่คุณต้องการใช้
+    archiveFileName = "Mss3-Mod-v1.jar" // ไฟล์นี้แหละที่จะหนัก 4.5 MB และเอาไปใช้จริง
 }
 
+// ไฟล์ตัวเล็ก (36 KB) จะถูกแยกออกมา ไม่ให้สับสน
 jar {
     archiveClassifier.set('thin')
 }
