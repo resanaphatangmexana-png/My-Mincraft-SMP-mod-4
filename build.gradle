@@ -1,5 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT' // ต้องมีบรรทัดนี้เพื่อให้ระบบรู้จักการบิลด์ mod
+    // เปลี่ยนจาก 1.9-SNAPSHOT เป็น 1.7-SNAPSHOT หรือ 1.8-SNAPSHOT
+    id 'fabric-loom' version '1.8-SNAPSHOT' 
 }
 
 group = 'com.mss3'
