@@ -1,27 +1,18 @@
 {
   "schemaVersion": 1,
-  "id": "mss3_mod",
+  "id": "mss3smp",
   "version": "1.0.0",
-  "name": "Mss3 Mod",
-  "description": "Custom Minecraft Mod with TPA, Eco, and Shop Systems",
-  "authors": [
-    "YourName"
-  ],
-  "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/fabricmc/fabric-example-mod"
-  },
+  "name": "Mincraft Ss3",
+  "description": "Full SMP System for 1.21.11",
+  "authors": [ "YourName" ],
+  "contact": { "homepage": "https://fabricmc.net/" },
   "license": "CC0-1.0",
-  "icon": "assets/mss3_mod/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.mss3.mod.Mss3Mod"
+      "com.mss3.Mss3Mod"
     ]
   },
-  "mixins": [
-    "mss3_mod.mixins.json"
-  ],
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": ">=1.21",
