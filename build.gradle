@@ -1,7 +1,8 @@
 plugins {
-    // เปลี่ยนจาก 1.8 เป็น 1.10 เพื่อรองรับ Minecraft 1.21.11
-    id 'fabric-loom' version '1.10-SNAPSHOT' 
+    id 'fabric-loom' version '1.9-SNAPSHOT' 
 }
+
+// ส่วนอื่นๆ ของไฟล์คงเดิมไว้ (ที่แก้เป็น 1.21.11 ไว้แล้ว)
 
 group = 'com.mss3'
 version = '1.0.0'
