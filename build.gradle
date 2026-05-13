@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'fabric-loom' version '1.9-SNAPSHOT'
 }
 
 group = 'com.mss3'
@@ -12,14 +12,19 @@ java {
 }
 
 repositories {
-    mavenCentral()
     maven { url = "https://maven.fabricmc.net/" }
 }
 
 dependencies {
-    // ดึง Library ที่จำเป็นสำหรับโค้ด Minecraft
-    implementation 'net.fabricmc:fabric-loader:0.16.9'
-    implementation 'org.jetbrains:annotations:24.1.0'
+    // บรรทัดพวกนี้สำคัญมากเพื่อให้มันรู้จัก RegistryWrapper และคลาสอื่นๆ ของ Minecraft
+    minecraft "com.mojang:minecraft:1.21.4"
+    mappings "net.fabricmc:yarn:1.21.4+build.2:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.16.9"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.112.0+1.21.4"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
 }
 
 jar {
