@@ -23,13 +23,14 @@ public class Mss3Mod implements ModInitializer {
     public static final String DISPLAY_TITLE = "Mincraft Ss3";
     public static final Logger LOGGER = LoggerFactory.getLogger("Mss3SMP");
     
-    // บรรทัดที่ขาดไปซึ่งทำให้บิลด์ล้มเหลวในรูป image_1cc177
+    // ห้ามหาย: ตัวแปรสำหรับ PlayerData
     public static final String DEFAULT_REGION = "Spawn"; 
 
     private static final int HUD_UPDATE_INTERVAL = 20;
     private static final int BOUNTY_CHECK_INTERVAL = 200;
     private int tickCounter = 0;
 
+    // ห้ามหาย: ตัวแปรระบบหลัก
     public static MinecraftServer SERVER;
     public static HudManager HUD;
     public static TpaManager TPA;
@@ -38,7 +39,7 @@ public class Mss3Mod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("[Mincraft Ss3] All Systems Online!");
+        LOGGER.info("[Mincraft Ss3] Initializing Full System...");
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
@@ -47,6 +48,7 @@ public class Mss3Mod implements ModInitializer {
             BOUNTY = new BountyManager();
             ADMIN = new AdminManager();
             ADMIN.initialize(server);
+            LOGGER.info("[Mincraft Ss3] All Systems Active!");
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -59,13 +61,15 @@ public class Mss3Mod implements ModInitializer {
             if (HUD != null) HUD.attach(player);
             if (data.isAdmin && ADMIN != null) ADMIN.applyTeam(player);
             if (data.isInvisible) applyInvisibility(player, true);
-            player.sendMessage(Text.literal("§e§lMincraft Ss3 §rReady!"), false);
+            player.sendMessage(Text.literal("§e§lMincraft Ss3 §rพร้อมเล่น!"), false);
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             tickCounter++;
             if (HUD != null && tickCounter % HUD_UPDATE_INTERVAL == 0) {
-                for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) { HUD.update(p); }
+                for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+                    HUD.update(p);
+                }
             }
             if (TPA != null && tickCounter % 20 == 0) TPA.tickExpiry(server);
             if (BOUNTY != null && tickCounter % BOUNTY_CHECK_INTERVAL == 0) BOUNTY.tick(server);
@@ -90,22 +94,56 @@ public class Mss3Mod implements ModInitializer {
 
     private void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, env) -> {
-            dispatcher.register(CommandManager.literal("money").executes(ctx -> {
-                ServerPlayerEntity p = ctx.getSource().getPlayerOrThrow();
-                long bal = Mss3State.get(SERVER).getOrCreatePlayer(p.getUuid()).money;
-                p.sendMessage(Text.literal("§eBalance: §f$" + bal), false);
+            // ระบบ Shop
+            dispatcher.register(CommandManager.literal("shop").executes(ctx -> {
+                ShopHandler.openMainMenu(ctx.getSource().getPlayerOrThrow());
                 return 1;
             }));
-            
+
+            // ระบบ TPA
             dispatcher.register(CommandManager.literal("tpa")
                 .then(CommandManager.argument("target", EntityArgumentType.player()).executes(ctx -> {
                     TPA.sendRequest(ctx.getSource().getPlayerOrThrow(), EntityArgumentType.getPlayer(ctx, "target"));
                     return 1;
                 })));
-
             dispatcher.register(CommandManager.literal("yes").executes(ctx -> TPA.accept(ctx.getSource().getPlayerOrThrow()) ? 1 : 0));
             dispatcher.register(CommandManager.literal("no").executes(ctx -> TPA.deny(ctx.getSource().getPlayerOrThrow()) ? 1 : 0));
+
+            // ระบบ Money
+            dispatcher.register(CommandManager.literal("money").executes(ctx -> {
+                ServerPlayerEntity p = ctx.getSource().getPlayerOrThrow();
+                long bal = Mss3State.get(SERVER).getOrCreatePlayer(p.getUuid()).money;
+                p.sendMessage(Text.literal("§eBalance: §f$" + formatMoney(bal)), false);
+                return 1;
+            }));
+            
+            // ระบบ Admin
+            dispatcher.register(CommandManager.literal("admin")
+                .requires(src -> src.hasPermissionLevel(2))
+                .then(CommandManager.argument("player", EntityArgumentType.player()).executes(ctx -> {
+                    ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+                    PlayerData data = Mss3State.get(SERVER).getOrCreatePlayer(target.getUuid());
+                    data.isAdmin = !data.isAdmin;
+                    if (data.isAdmin) ADMIN.applyTeam(target); else ADMIN.removeFromTeam(target);
+                    Mss3State.get(SERVER).markDirty();
+                    return 1;
+                })));
         });
+    }
+
+    // ห้ามหาย: ฟังก์ชันจัดรูปแบบเงิน (แก้ Error ใน Shop/Bounty/Hud)
+    public static String formatMoney(long m) {
+        if (m >= 1_000_000L) return String.format("%.2fM", m / 1_000_000.0);
+        if (m >= 1_000L) return String.format("%.2fK", m / 1_000.0);
+        return String.valueOf(m);
+    }
+
+    // ห้ามหาย: ฟังก์ชันเวลา (แก้ Error ใน Hud)
+    public static String formatPlaytime(long ticks) {
+        long seconds = ticks / 20;
+        long h = seconds / 3600;
+        long m = (seconds % 3600) / 60;
+        return String.format("%02d:%02d", h, m);
     }
 
     public static void applyInvisibility(ServerPlayerEntity p, boolean on) {
