@@ -1,6 +1,8 @@
 plugins {
     id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    // เพิ่มปลั๊กอิน Kotlin เพื่อให้เขียนด้วย Kotlin ได้
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0' 
 }
 
 group = 'com.mss3'
@@ -17,19 +19,27 @@ dependencies {
     mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.0"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
+
+    // ✅ เพิ่มบรรทัดนี้: เพื่อให้ Mod ของคุณเรียกใช้ภาษา Kotlin จากมอดแยกข้างนอก
+    modImplementation "net.fabricmc:fabric-language-kotlin:1.13.11+kotlin.2.3.21"
 }
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+// ✅ ปรับเป็น Java 22 ตามที่มอด C2ME ต้องการ
+java { toolchain { languageVersion = JavaLanguageVersion.of(22) } }
 
-shadowJar {
+// ❌ ลบหรือคอมเมนต์ shadowJar ตัวเก่าทิ้งไปเลยครับ 
+// เพราะมันเป็นตัวที่ดึงเอา Kotlin เข้าไปฝังในมอดจนเกมเด้ง
+/* shadowJar {
     configurations = [project.configurations.modImplementation]
     archiveClassifier.set('shadow')
 }
+*/
 
+// ✅ ปรับ remapJar ให้เป็นค่ามาตรฐาน (ไม่ต้องใช้ shadowJar)
 remapJar {
-    dependsOn shadowJar
-    inputFile.set(shadowJar.archiveFile)
+    // ลบบรรทัด dependsOn และ inputFile ของ shadowJar ออก
     archiveFileName = "Mss3-Mod-v1.jar"
 }
 
+// ตั้งค่า jar ปกติ
 jar { archiveClassifier.set('thin') }
