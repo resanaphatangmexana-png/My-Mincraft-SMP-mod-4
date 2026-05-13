@@ -13,13 +13,10 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.21.1"
-    mappings "net.fabricmc:yarn:1.21.1+build.2:v2"
+    minecraft "com.mojang:minecraft:1.21.11" // เปลี่ยนจาก 1.21.1 เป็น 1.21.11
+    mappings "net.fabricmc:yarn:1.21.11+build.1:v2" // ตรวจสอบเวอร์ชัน Yarn ล่าสุดสำหรับ 1.21.11
     modImplementation "net.fabricmc:fabric-loader:0.16.9"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
-    
-    // ตั้งค่าให้ Library ถูกดึงเข้าไปรวมในไฟล์ 4MB
-    shadow(implementation("net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"))
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.141.4+1.21.11" // ใช้ตัวเดียวกับในเครื่องคุณ
 }
 
 java {
