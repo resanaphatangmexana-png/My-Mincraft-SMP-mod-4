@@ -1,21 +1,30 @@
 {
   "schemaVersion": 1,
-  "id": "mss3-mod",
+  "id": "mss3_mod",
   "version": "1.0.0",
   "name": "Mss3 Mod",
   "description": "Custom Minecraft Mod with TPA, Eco, and Shop Systems",
   "authors": [
-    "mss3"
+    "YourName"
   ],
-  "contact": {},
-  "license": "MIT",
-  "icon": "assets/mss3-mod/icon.png",
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/fabricmc/fabric-example-mod"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/mss3_mod/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.mss3.Mss3Mod"
+      "net.mss3.mod.Mss3Mod"
     ]
   },
-"depends": {
-    "minecraft": ">=1.21" 
+  "mixins": [
+    "mss3_mod.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21",
+    "java": ">=21"
+  }
 }
