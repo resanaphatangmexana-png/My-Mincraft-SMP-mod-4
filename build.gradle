@@ -5,6 +5,7 @@ plugins {
 group = 'com.mss3'
 version = '1.0.0'
 
+// ตั้งค่าให้ใช้ Java 21 ตามความต้องการของ Minecraft 1.21.4
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -13,8 +14,20 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = "https://maven.fabricmc.net/" }
+}
+
+dependencies {
+    // ดึง Library พื้นฐานที่โค้ด Mss3State.java เรียกใช้
+    implementation 'net.fabricmc:fabric-loader:0.16.9'
+    implementation 'org.jetbrains:annotations:24.1.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
 }
 
 jar {
-    archiveFileName = "Mss3-Test-Build.jar"
+    // ชื่อไฟล์ที่จะปรากฏในเครื่องของคุณ
+    archiveFileName = "Mss3-Mod-v1.jar"
 }
