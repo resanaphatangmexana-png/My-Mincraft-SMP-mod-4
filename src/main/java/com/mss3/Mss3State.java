@@ -42,7 +42,7 @@ public class Mss3State extends PersistentState {
     }
 
     /** Return ALL active listings from all players, flattened. */
-    public List<PlayerData.ShopListing> getAllListings() {
+    public List<ShopListing> getAllListings() {
         List<PlayerData.ShopListing> all = new ArrayList<>();
         for (PlayerData d : players.values()) {
             all.addAll(d.listings);
