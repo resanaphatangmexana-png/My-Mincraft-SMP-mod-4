@@ -3,13 +3,11 @@
   "id": "mss3smp",
   "version": "1.0.0",
   "name": "Mincraft Ss3",
-  "description": "The official server-side mod for Mincraft Ss3 SMP. Featuring TPA, Economy, Shop, and Admin systems.",
+  "description": "The official server-side mod for Mincraft Ss3 SMP.",
   "authors": [
     {
       "name": "YourName",
-      "contact": {
-        "sources": "https://github.com/your-repo"
-      }
+      "contact": { "sources": "https://github.com/your-repo" }
     }
   ],
   "contact": {
@@ -29,8 +27,5 @@
     "minecraft": ">=1.21",
     "java": ">=21",
     "fabric-api": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }
