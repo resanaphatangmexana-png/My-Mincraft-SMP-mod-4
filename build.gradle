@@ -1,8 +1,6 @@
 plugins {
     id 'fabric-loom' version '1.7-SNAPSHOT'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    // เพิ่มปลั๊กอิน Kotlin เพื่อให้เขียนด้วย Kotlin ได้
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0' 
+    // ลบปลั๊กอิน shadow ออกไปเลยครับ เพราะเราจะไม่รวม Library ไว้ในตัวมอดแล้ว
 }
 
 group = 'com.mss3'
@@ -17,29 +15,28 @@ repositories {
 dependencies {
     minecraft "com.mojang:minecraft:1.21.1" 
     mappings "net.fabricmc:yarn:1.21.1+build.3:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.16.0"
+    modImplementation "net.fabricmc:fabric-loader:0.18.4" // ปรับตามเวอร์ชันที่เราใช้ใน Launcher
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
 
-    // ✅ เพิ่มบรรทัดนี้: เพื่อให้ Mod ของคุณเรียกใช้ภาษา Kotlin จากมอดแยกข้างนอก
+    // ✅ เพิ่มตัวนี้เพื่อให้ Mod เรียกใช้ Kotlin จากข้างนอก
     modImplementation "net.fabricmc:fabric-language-kotlin:1.13.11+kotlin.2.3.21"
 }
 
-// ✅ ปรับเป็น Java 22 ตามที่มอด C2ME ต้องการ
+// ✅ ใช้ Java 22 ตามที่ลงไว้ในเครื่อง
 java { toolchain { languageVersion = JavaLanguageVersion.of(22) } }
 
-// ❌ ลบหรือคอมเมนต์ shadowJar ตัวเก่าทิ้งไปเลยครับ 
-// เพราะมันเป็นตัวที่ดึงเอา Kotlin เข้าไปฝังในมอดจนเกมเด้ง
-/* shadowJar {
-    configurations = [project.configurations.modImplementation]
-    archiveClassifier.set('shadow')
-}
-*/
+// ❌ ลบส่วน shadowJar และการตั้งค่า remapJar ที่เกี่ยวกับ shadow ออกให้หมด
+// ใช้ค่ามาตรฐานของ Fabric Loom แทน
 
-// ✅ ปรับ remapJar ให้เป็นค่ามาตรฐาน (ไม่ต้องใช้ shadowJar)
-remapJar {
-    // ลบบรรทัด dependsOn และ inputFile ของ shadowJar ออก
-    archiveFileName = "Mss3-Mod-v1.jar"
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 22
 }
 
-// ตั้งค่า jar ปกติ
-jar { archiveClassifier.set('thin') }
+processResources {
+    inputs.property "version", project.version
+    filteringCharset = "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
