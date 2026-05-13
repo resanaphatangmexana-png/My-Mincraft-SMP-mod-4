@@ -17,15 +17,6 @@ import java.util.UUID;
 
 /**
  * TPA system — manages teleport requests between players.
- *
- * Flow:
- *  1. Player A: /tpa <PlayerB>
- *  2. Player B sees:
- *     - Sound (orb pickup ping)
- *     - Chat: "PlayerA อยากวาปมาหาคุณ — [✓ Accept] [✗ Deny]"
- *  3. Player B clicks Accept (or types /yes)
- *  4. Player A teleports to Player B's location
- *  5. Auto-expire after 30 seconds
  */
 public class TpaManager {
     private static final long EXPIRY_MS = 30_000L; // 30 seconds
@@ -46,16 +37,13 @@ public class TpaManager {
     }
 
     public void sendRequest(ServerPlayerEntity sender, ServerPlayerEntity target) {
-        // Cancel any existing inbound request to target from anyone (overwrite)
         pending.put(target.getUuid(), new Request(sender.getUuid(), sender.getName().getString()));
 
-        // 1) Notify sender
         sender.sendMessage(
             Text.literal("§aส่งคำขอ TPA ไปหา §e" + target.getName().getString() + " §aแล้ว §7(หมดอายุใน 30 วินาที)"),
             false
         );
 
-        // 2) Notify target with clickable buttons + sound
         MutableText line1 = Text.literal("§e§l" + sender.getName().getString() + " §r§eอยากวาปมาหาคุณ");
         MutableText accept = Text.literal(" §a§l[✓ ยอมรับ]")
             .styled(s -> s
@@ -71,14 +59,11 @@ public class TpaManager {
         target.sendMessage(accept.append(deny), false);
         target.sendMessage(Text.literal("§7§m─────────────────────────"), false);
 
-        // Sound — pleasant ping
         target.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_BELL.value(),
             SoundCategory.PLAYERS, 1.0f, 1.2f);
-        // Second ping for emphasis
         target.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(),
             SoundCategory.PLAYERS, 0.8f, 1.5f);
 
-        // Action bar
         target.sendMessage(Text.literal("§e⚡ TPA Request from " + sender.getName().getString()), true);
     }
 
@@ -94,15 +79,16 @@ public class TpaManager {
             return false;
         }
 
-        // Teleport sender to target
-        net.minecraft.server.world.ServerWorld targetWorld = target.getServerWorld();
+        // แก้ไขจุดนี้: ใช้คำสั่ง teleport แบบ 6 พารามิเตอร์สำหรับ Minecraft 1.21+
         sender.teleport(
-            targetWorld,
-            target.getX(), target.getY(), target.getZ(),
-            java.util.Collections.emptySet(),
-            target.getYaw(), target.getPitch(),
-            false
+            target.getServerWorld(),
+            target.getX(), 
+            target.getY(), 
+            target.getZ(),
+            target.getYaw(), 
+            target.getPitch()
         );
+        
         sender.sendMessage(Text.literal("§aTeleported to §e" + target.getName().getString()), false);
         target.sendMessage(Text.literal("§a" + sender.getName().getString() + " §aวาปมาหาคุณแล้ว"), false);
         target.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.6f, 1.5f);
@@ -123,7 +109,6 @@ public class TpaManager {
         return true;
     }
 
-    /** Called every second to expire old requests. */
     public void tickExpiry(MinecraftServer server) {
         long now = System.currentTimeMillis();
         Iterator<Map.Entry<UUID, Request>> it = pending.entrySet().iterator();
@@ -143,9 +128,8 @@ public class TpaManager {
         }
     }
 
-    /** Called when a player disconnects — clean up their requests. */
     public void cleanup(UUID playerId) {
-        pending.remove(playerId); // remove inbound requests for them
-        pending.entrySet().removeIf(e -> e.getValue().senderId.equals(playerId)); // remove their outbound
+        pending.remove(playerId);
+        pending.entrySet().removeIf(e -> e.getValue().senderId.equals(playerId));
     }
 }
