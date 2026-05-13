@@ -1,5 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.8-SNAPSHOT' 
+    id 'fabric-loom' version '1.8-SNAPSHOT'
+    id 'com.github.johnrengelman.shadow' version '8.1.1' // เพิ่ม plugin สำหรับรวมไฟล์ (Shadow)
 }
 
 group = 'com.mss3'
@@ -8,6 +9,7 @@ version = '1.0.0'
 repositories {
     mavenCentral()
     maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://jitpack.io" }
 }
 
 dependencies {
@@ -15,6 +17,8 @@ dependencies {
     mappings "net.fabricmc:yarn:1.21.1+build.2:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.9"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
+    
+    // หากคุณมีการใช้ Library อื่นๆ ให้ใช้ shadow แทน implementation เพื่อให้รวมเข้าไปในไฟล์ 4MB
 }
 
 java {
@@ -23,6 +27,18 @@ java {
     }
 }
 
+// ส่วนสำคัญที่ทำให้ไฟล์มีขนาดใหญ่และใช้งานได้จริง
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set('shadow')
+}
+
+remapJar {
+    dependsOn shadowJar
+    inputFile.set(shadowJar.archiveFile)
+    archiveFileName = "Mss3-Mod-v1.jar" // ชื่อไฟล์ที่คุณต้องการ
+}
+
 jar {
-    archiveFileName = "Mss3-Mod-v1.jar"
+    archiveClassifier.set('thin')
 }
