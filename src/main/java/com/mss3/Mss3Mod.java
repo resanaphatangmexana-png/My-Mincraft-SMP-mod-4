@@ -22,6 +22,9 @@ public class Mss3Mod implements ModInitializer {
     public static final String MOD_ID = "mss3smp";
     public static final String DISPLAY_TITLE = "Mincraft Ss3";
     public static final Logger LOGGER = LoggerFactory.getLogger("Mss3SMP");
+    
+    // บรรทัดสำคัญ: แก้ Error cannot find symbol ใน PlayerData
+    public static final String DEFAULT_REGION = "Spawn"; 
 
     private static final int HUD_UPDATE_INTERVAL = 20;     // 1 sec
     private static final int BOUNTY_CHECK_INTERVAL = 200;  // 10 sec
@@ -170,45 +173,4 @@ public class Mss3Mod implements ModInitializer {
                     return 1;
                 })));
 
-            dispatcher.register(CommandManager.literal("invit").requires(this::requireAdmin).executes(ctx -> {
-                ServerPlayerEntity p = ctx.getSource().getPlayerOrThrow();
-                PlayerData data = Mss3State.get(SERVER).getOrCreatePlayer(p.getUuid());
-                data.isInvisible = true;
-                applyInvisibility(p, true);
-                Mss3State.get(SERVER).markDirty();
-                return 1;
-            }));
-            
-            dispatcher.register(CommandManager.literal("bounty").executes(ctx -> {
-                BOUNTY.listBounties(ctx.getSource().getPlayerOrThrow());
-                return 1;
-            }));
-        });
-    }
-
-    private int payCommand(ServerPlayerEntity sender, ServerPlayerEntity target, long amount) {
-        if (sender.equals(target)) return 0;
-        PlayerData sData = Mss3State.get(SERVER).getOrCreatePlayer(sender.getUuid());
-        if (sData.money < amount) return 0;
-        PlayerData tData = Mss3State.get(SERVER).getOrCreatePlayer(target.getUuid());
-        sData.money -= amount; tData.money += amount;
-        Mss3State.get(SERVER).markDirty();
-        return 1;
-    }
-
-    private boolean requireAdmin(ServerCommandSource src) {
-        if (src.getPlayer() == null) return src.hasPermissionLevel(2);
-        return src.hasPermissionLevel(2) || Mss3State.get(SERVER).getOrCreatePlayer(src.getPlayer().getUuid()).isAdmin;
-    }
-
-    public static void applyInvisibility(ServerPlayerEntity p, boolean on) {
-        if (on) { p.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, StatusEffectInstance.INFINITE, 0, false, false, false)); }
-        else { p.removeStatusEffect(StatusEffects.INVISIBILITY); }
-    }
-
-    public static String formatMoney(long m) {
-        if (m >= 1_000_000L) return String.format("%.2fM", m / 1_000_000.0);
-        if (m >= 1_000L) return String.format("%.2fK", m / 1_000.0);
-        return String.valueOf(m);
-    }
-}
+            dispatcher.register(CommandManager.literal("invit
