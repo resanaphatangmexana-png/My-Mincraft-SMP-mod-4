@@ -3,19 +3,37 @@
   "id": "mss3smp",
   "version": "1.0.0",
   "name": "Mincraft Ss3",
-  "description": "Full SMP System for 1.21.11",
-  "authors": [ "YourName" ],
-  "contact": { "homepage": "https://fabricmc.net/" },
-  "license": "CC0-1.0",
+  "description": "The official server-side mod for Mincraft Ss3 SMP. Featuring TPA, Economy, Shop, and Admin systems.",
+  "authors": [
+    {
+      "name": "YourName",
+      "contact": {
+        "sources": "https://github.com/your-repo"
+      }
+    }
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/your-repo"
+  },
+  "license": "MIT",
+  "icon": "assets/mss3smp/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
       "com.mss3.Mss3Mod"
     ]
   },
+  "mixins": [
+    "mss3smp.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": ">=1.21",
-    "java": ">=21"
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
   }
 }
