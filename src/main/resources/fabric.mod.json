@@ -1,20 +1,22 @@
 {
   "schemaVersion": 1,
-  "id": "mss3smp",
+  "id": "mss3-mod",
   "version": "1.0.0",
-  "name": "Mincraft Ss3 SMP",
-  "description": "Server-side SMP mod: real-time sidebar HUD, shop GUI, TPA system. Players don't need to install anything.",
-  "authors": ["Satoo1234"],
+  "name": "Mss3 Mod",
+  "description": "Custom Minecraft Mod",
+  "authors": ["mss3"],
   "contact": {},
   "license": "MIT",
-  "environment": "server",
+  "icon": "assets/mss3-mod/icon.png",
+  "environment": "*",
   "entrypoints": {
-    "main": ["com.mss3.Mss3Mod"]
+    "main": [
+      "com.mss3.Mss3State"
+    ]
   },
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "fabric-api": "*",
-    "minecraft": ">=1.21.4",
+    "fabricloader": ">=0.16.9",
+    "minecraft": "1.21.4",
     "java": ">=21"
   }
 }
