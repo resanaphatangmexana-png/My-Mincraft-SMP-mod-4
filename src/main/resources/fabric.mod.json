@@ -11,12 +11,12 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.mss3.Mss3State"
+      "com.mss3.Mss3Mod"
     ]
   },
   "depends": {
     "fabricloader": ">=0.16.9",
-    "minecraft": "1.21.4",
+    "minecraft": "1.21.11",
     "java": ">=21"
   }
 }
