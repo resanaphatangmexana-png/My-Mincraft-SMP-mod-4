@@ -5,19 +5,20 @@ plugins {
 group = 'com.mss3'
 version = '1.0.0'
 
-// ตั้งค่าให้ใช้ Java 21 ตามที่ Minecraft 1.21.4 ต้องการ
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(21) // ใช้ Java 21 ตามมาตรฐาน 1.21.4
     }
 }
 
 repositories {
     mavenCentral()
+    maven { url = "https://maven.fabricmc.net/" } // แหล่งเก็บข้อมูล Library ของ Minecraft
 }
 
 dependencies {
-    // ใส่ library พื้นฐานที่จำเป็น
+    // ดึง Library พื้นฐานที่จำเป็นสำหรับ Minecraft 1.21.4
+    implementation 'net.fabricmc:fabric-loader:0.16.9'
     implementation 'org.jetbrains:annotations:24.1.0'
 }
 
@@ -26,6 +27,5 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 jar {
-    // ตั้งชื่อไฟล์ที่จะดาวน์โหลด
-    archiveFileName = "Mss3-Mod-v1.jar"
+    archiveFileName = "Mss3-Mod-v1.jar" // ชื่อไฟล์ที่คุณจะได้โหลด
 }
