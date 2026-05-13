@@ -13,10 +13,10 @@ java {
 
 repositories {
     maven { url = "https://maven.fabricmc.net/" }
+    mavenCentral()
 }
 
 dependencies {
-    // บรรทัดพวกนี้สำคัญมากเพื่อให้มันรู้จัก RegistryWrapper และคลาสอื่นๆ ของ Minecraft
     minecraft "com.mojang:minecraft:1.21.4"
     mappings "net.fabricmc:yarn:1.21.4+build.2:v2"
     modImplementation "net.fabricmc:fabric-loader:0.16.9"
