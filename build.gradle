@@ -18,13 +18,13 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:0.18.4"
     modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.0+1.21.1"
 
-    // ✅ ใช้ modCompileOnly เพื่อไม่ให้มันเอา Kotlin เข้าไปรวมในมอด
-    modCompileOnly "net.fabricmc:fabric-language-kotlin:1.13.11+kotlin.2.3.21"
+    // ✅ เปลี่ยนจาก modCompileOnly เป็น compileOnly ธรรมดา
+    // เพื่อให้มัน "รู้จัก" โค้ด Kotlin เฉพาะตอนเขียน แต่ "ไม่ต้อง" ยุ่งตอน Build/Remap
+    compileOnly "net.fabricmc:fabric-language-kotlin:1.13.11+kotlin.2.3.21"
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-// ✅ บังคับให้ Loom ล้างค่ามอดตัวอื่นทิ้งทั้งหมด
 loom {
     mods.clear()
 }
