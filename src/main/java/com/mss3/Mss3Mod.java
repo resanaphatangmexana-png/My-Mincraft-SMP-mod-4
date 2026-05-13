@@ -18,16 +18,12 @@ import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Mincraft Ss3 SMP — full server-side mod system.
- * ปรับปรุงเพื่อรองรับ Minecraft 1.21.11
- */
 public class Mss3Mod implements ModInitializer {
     public static final String MOD_ID = "mss3smp";
     public static final String DISPLAY_TITLE = "Mincraft Ss3";
     public static final Logger LOGGER = LoggerFactory.getLogger("Mss3SMP");
 
-    private static final int HUD_UPDATE_INTERVAL = 20;    // 1 sec
+    private static final int HUD_UPDATE_INTERVAL = 20;     // 1 sec
     private static final int BOUNTY_CHECK_INTERVAL = 200;  // 10 sec
     private int tickCounter = 0;
 
@@ -39,7 +35,7 @@ public class Mss3Mod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("[Mincraft Ss3] Initializing for 1.21.11...");
+        LOGGER.info("[Mincraft Ss3] Initializing full system for 1.21.11...");
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
@@ -48,7 +44,7 @@ public class Mss3Mod implements ModInitializer {
             BOUNTY = new BountyManager();
             ADMIN = new AdminManager();
             ADMIN.initialize(server);
-            LOGGER.info("[Mincraft Ss3] All Systems Online!");
+            LOGGER.info("[Mincraft Ss3] All Systems Active!");
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -63,8 +59,11 @@ public class Mss3Mod implements ModInitializer {
             if (data.isAdmin && ADMIN != null) ADMIN.applyTeam(player);
             if (data.isInvisible) applyInvisibility(player, true);
 
-            player.sendMessage(Text.literal("§e§lMincraft Ss3 §rพร้อมเล่น! (v1.21.11 Compatible)"), false);
-            player.sendMessage(Text.literal("§7คำสั่ง: §e/shop §7| §e/tpa §7| §e/money"), false);
+            player.sendMessage(Text.literal("§e§lMincraft Ss3 §rพร้อมเล่น!"), false);
+            player.sendMessage(Text.literal("§7คำสั่ง: §e/shop §7| §e/tpa §7| §e/shopsell §7| §e/money"), false);
+            if (BOUNTY != null && BOUNTY.hasActiveBounty(player.getUuid())) {
+                player.sendMessage(Text.literal("§c⚠ คุณมีค่าหัวบนหัว! ระวังตัว!"), false);
+            }
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
@@ -84,7 +83,6 @@ public class Mss3Mod implements ModInitializer {
             if (BOUNTY != null && tickCounter % BOUNTY_CHECK_INTERVAL == 0) BOUNTY.tick(server);
         });
 
-        // ระบบล่าค่าหัว (Bounty)
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (!(source.getAttacker() instanceof ServerPlayerEntity killer)) return;
             if (killer.equals(entity)) return;
@@ -116,13 +114,15 @@ public class Mss3Mod implements ModInitializer {
     private void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, env) -> {
 
-            // /shop
             dispatcher.register(CommandManager.literal("shop").executes(ctx -> {
                 ShopHandler.openMainMenu(ctx.getSource().getPlayerOrThrow());
                 return 1;
             }));
 
-            // /tpa <player>
+            dispatcher.register(CommandManager.literal("shopsell").executes(ctx -> {
+                return ShopHandler.sellBonemeal(ctx.getSource().getPlayerOrThrow());
+            }));
+
             dispatcher.register(CommandManager.literal("tpa")
                 .then(CommandManager.argument("target", EntityArgumentType.player()).executes(ctx -> {
                     ServerPlayerEntity sender = ctx.getSource().getPlayerOrThrow();
@@ -135,11 +135,16 @@ public class Mss3Mod implements ModInitializer {
                     return 1;
                 })));
 
-            // /yes & /no
             dispatcher.register(CommandManager.literal("yes").executes(ctx -> TPA.accept(ctx.getSource().getPlayerOrThrow()) ? 1 : 0));
-            dispatcher.register(CommandManager.literal("no").executes(ctx -> TPA.deny(ctx.getSource().getPlayerOrThrow()) ? 1 : 0));
 
-            // /money
+            dispatcher.register(CommandManager.literal("no")
+                .executes(ctx -> TPA.deny(ctx.getSource().getPlayerOrThrow()) ? 1 : 0)
+                .then(CommandManager.literal("pro").requires(this::requireAdmin).executes(ctx -> {
+                    boolean nowEnabled = BOUNTY.toggle();
+                    ctx.getSource().sendFeedback(() -> Text.literal("§7[Admin] " + (nowEnabled ? "§aเปิด" : "§cปิด") + " §7ระบบค่าหัว"), true);
+                    return 1;
+                })));
+
             dispatcher.register(CommandManager.literal("money")
                 .executes(ctx -> {
                     ServerPlayerEntity p = ctx.getSource().getPlayerOrThrow();
@@ -148,38 +153,57 @@ public class Mss3Mod implements ModInitializer {
                     return 1;
                 }));
 
-            // /admin <player> (Permission Level 2 required)
+            dispatcher.register(CommandManager.literal("pay")
+                .then(CommandManager.argument("player", EntityArgumentType.player())
+                    .then(CommandManager.argument("amount", LongArgumentType.longArg(1)).executes(ctx -> {
+                        return payCommand(ctx.getSource().getPlayerOrThrow(), EntityArgumentType.getPlayer(ctx, "player"), LongArgumentType.getLong(ctx, "amount"));
+                    }))));
+
             dispatcher.register(CommandManager.literal("admin")
                 .requires(src -> src.hasPermissionLevel(2))
                 .then(CommandManager.argument("player", EntityArgumentType.player()).executes(ctx -> {
                     ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
                     PlayerData data = Mss3State.get(SERVER).getOrCreatePlayer(target.getUuid());
                     data.isAdmin = !data.isAdmin;
-                    if (data.isAdmin) {
-                        ADMIN.applyTeam(target);
-                        target.sendMessage(Text.literal("§b§lคุณได้รับยศ Admin แล้ว!"), false);
-                    } else {
-                        ADMIN.removeFromTeam(target);
-                        target.sendMessage(Text.literal("§7ยศ Admin ถูกถอด"), false);
-                    }
+                    if (data.isAdmin) { ADMIN.applyTeam(target); } else { ADMIN.removeFromTeam(target); }
                     Mss3State.get(SERVER).markDirty();
                     return 1;
                 })));
+
+            dispatcher.register(CommandManager.literal("invit").requires(this::requireAdmin).executes(ctx -> {
+                ServerPlayerEntity p = ctx.getSource().getPlayerOrThrow();
+                PlayerData data = Mss3State.get(SERVER).getOrCreatePlayer(p.getUuid());
+                data.isInvisible = true;
+                applyInvisibility(p, true);
+                Mss3State.get(SERVER).markDirty();
+                return 1;
+            }));
+            
+            dispatcher.register(CommandManager.literal("bounty").executes(ctx -> {
+                BOUNTY.listBounties(ctx.getSource().getPlayerOrThrow());
+                return 1;
+            }));
         });
     }
 
+    private int payCommand(ServerPlayerEntity sender, ServerPlayerEntity target, long amount) {
+        if (sender.equals(target)) return 0;
+        PlayerData sData = Mss3State.get(SERVER).getOrCreatePlayer(sender.getUuid());
+        if (sData.money < amount) return 0;
+        PlayerData tData = Mss3State.get(SERVER).getOrCreatePlayer(target.getUuid());
+        sData.money -= amount; tData.money += amount;
+        Mss3State.get(SERVER).markDirty();
+        return 1;
+    }
+
     private boolean requireAdmin(ServerCommandSource src) {
-        ServerPlayerEntity p = src.getPlayer();
-        if (p == null) return src.hasPermissionLevel(2);
-        return src.hasPermissionLevel(2) || Mss3State.get(SERVER).getOrCreatePlayer(p.getUuid()).isAdmin;
+        if (src.getPlayer() == null) return src.hasPermissionLevel(2);
+        return src.hasPermissionLevel(2) || Mss3State.get(SERVER).getOrCreatePlayer(src.getPlayer().getUuid()).isAdmin;
     }
 
     public static void applyInvisibility(ServerPlayerEntity p, boolean on) {
-        if (on) {
-            p.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, StatusEffectInstance.INFINITE, 0, false, false, false));
-        } else {
-            p.removeStatusEffect(StatusEffects.INVISIBILITY);
-        }
+        if (on) { p.addStatusEffect(new StatusEffectInstance(StatusEffects.INVISIBILITY, StatusEffectInstance.INFINITE, 0, false, false, false)); }
+        else { p.removeStatusEffect(StatusEffects.INVISIBILITY); }
     }
 
     public static String formatMoney(long m) {
